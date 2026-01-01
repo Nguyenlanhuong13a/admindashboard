@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Premium Next.js 15 Admin Dashboard Starter Kit
 
-## Getting Started
+A high-quality, responsive admin dashboard boilerplate built with the latest technologies for 2026.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Next.js 15 (App Router)**: Fast, modern, and SEO-friendly.
+- **Tailwind CSS v4**: Utility-first styling with the latest features.
+- **shadcn/ui**: Beautifully designed components that you can copy and paste.
+- **Dark Mode**: Built-in support with `next-themes`.
+- **Responsive Sidebar**: Collapsible mobile-friendly sidebar.
+- **Data Tables**: Advanced tables with sorting, filtering, and pagination using `@tanstack/react-table`.
+- **Charts**: Comprehensive data visualization with `Recharts`.
+- **Auth Pages**: Professional Login and Signup templates.
+- **Dynamic Breadcrumbs**: Automatically generated based on the current path.
+- **Clean Architecture**: Separation of concerns with mock data and reusable components.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 15](https://nextjs.org/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Tables**: [TanStack Table](https://tanstack.com/table)
+- **Charts**: [Recharts](https://recharts.org/)
+- **Forms**: [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 📦 Getting Started
 
-## Learn More
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+2. **Run the development server:**
+   ```bash
+   npm run dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Open [http://localhost:3000](http://localhost:3000)** in your browser to see the result.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Project Structure
 
-## Deploy on Vercel
+- `src/app`: Application routes and pages.
+- `src/components`: Reusable UI components and layout wrappers.
+- `src/components/ui`: shadcn/ui components.
+- `src/data`: Mock data for development and demonstration.
+- `src/hooks`: Custom React hooks (e.g., `use-mobile`).
+- `src/lib`: Utility functions.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 Customization
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Theme Colors**: Modify `src/app/globals.css` to change the primary colors and radii.
+- **Navigation**: Update the `data.navMain` in `src/components/app-sidebar.tsx`.
+- **Mock Data**: Change data in `src/data/mock-data.ts` to reflect your real business logic.
+
+## 📄 License
+
+This starter kit is designed for developers to jumpstart their SaaS or admin panel projects.
+
+---
+
+Built with ❤️ for the 2026 Developer Ecosystem.
