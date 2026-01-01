@@ -3,7 +3,10 @@ import { SignIn } from "@clerk/nextjs"
 export default function LoginPage() {
   return (
     <div className="flex flex-col gap-6">
-      <SignIn appearance={{
+      <SignIn 
+        path="/login"
+        routing="path"
+        appearance={{
         elements: {
           formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90",
           card: "shadow-none border border-border bg-card",

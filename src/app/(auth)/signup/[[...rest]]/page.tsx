@@ -3,7 +3,10 @@ import { SignUp } from "@clerk/nextjs"
 export default function SignupPage() {
   return (
     <div className="flex flex-col gap-6">
-      <SignUp appearance={{
+      <SignUp 
+        path="/signup"
+        routing="path"
+        appearance={{
         elements: {
           formButtonPrimary: "bg-primary text-primary-foreground hover:bg-primary/90",
           card: "shadow-none border border-border bg-card",
