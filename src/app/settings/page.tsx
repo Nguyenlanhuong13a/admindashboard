@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useTheme } from "next-themes"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -62,13 +63,18 @@ const defaultValues: Partial<ProfileFormValues> = {
  * Uses react-hook-form with zod validation.
  */
 export default function SettingsPage() {
+  const { setTheme, theme: currentTheme } = useTheme()
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: {
+      ...defaultValues,
+      theme: currentTheme || "system",
+    },
     mode: "onChange",
   })
 
   function onSubmit(data: ProfileFormValues) {
+    setTheme(data.theme)
     console.log(data)
     toast.success("Settings saved successfully!", {
       description: "Your profile and preferences have been updated.",
@@ -181,7 +187,13 @@ export default function SettingsPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Theme</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select 
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      setTheme(value)
+                    }} 
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a theme" />
