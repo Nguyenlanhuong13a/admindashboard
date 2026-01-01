@@ -1,7 +1,7 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { TrendingUp, Users, DollarSign, ShoppingCart, Activity } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Users, DollarSign, ShoppingCart, Activity } from "lucide-react"
 import {
   Bar,
   BarChart,
@@ -9,8 +9,6 @@ import {
   XAxis,
   Line,
   LineChart,
-  ResponsiveContainer,
-  Tooltip,
   Pie,
   PieChart,
   Cell,
@@ -20,7 +18,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
