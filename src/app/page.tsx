@@ -1,7 +1,8 @@
 "use client"
 
+import * as React from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Users, DollarSign, ShoppingCart, Activity } from "lucide-react"
+import { Users, DollarSign, ShoppingCart, Activity, Download } from "lucide-react"
 import {
   Bar,
   BarChart,
@@ -12,7 +13,10 @@ import {
   Pie,
   PieChart,
   Cell,
+  ResponsiveContainer,
 } from "recharts"
+import { addDays, subDays, isWithinInterval, format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns"
+import { DateRange } from "react-day-picker"
 
 import {
   Card,
@@ -27,29 +31,29 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { CalendarDateRangePicker } from "@/components/date-range-picker"
+import { Button } from "@/components/ui/button"
 
-const barChartData = [
-  { month: "Jan", desktop: 186, mobile: 80 },
-  { month: "Feb", desktop: 305, mobile: 200 },
-  { month: "Mar", desktop: 237, mobile: 120 },
-  { month: "Apr", desktop: 73, mobile: 190 },
-  { month: "May", desktop: 209, mobile: 130 },
-  { month: "Jun", desktop: 214, mobile: 140 },
-]
+// Generate granular dummy data
+const generateDailyData = (days: number) => {
+  return eachDayOfInterval({
+    start: subDays(new Date(), days - 1),
+    end: new Date(),
+  }).map(date => ({
+    date,
+    formattedDate: format(date, "MMM dd"),
+    desktop: Math.floor(Math.random() * 500) + 100,
+    mobile: Math.floor(Math.random() * 300) + 50,
+    revenue: Math.floor(Math.random() * 2000) + 500,
+  }))
+}
 
-const pieData = [
+const allDailyData = generateDailyData(90) // 90 days of data
+
+const pieDataAll = [
   { name: "Desktop", value: 400, fill: "var(--color-desktop)" },
   { name: "Mobile", value: 300, fill: "var(--color-mobile)" },
   { name: "Tablet", value: 300, fill: "var(--color-tablet)" },
-]
-
-const lineData = [
-  { month: "Jan", revenue: 4500 },
-  { month: "Feb", revenue: 5200 },
-  { month: "Mar", revenue: 4800 },
-  { month: "Apr", revenue: 6100 },
-  { month: "May", revenue: 5900 },
-  { month: "Jun", revenue: 7200 },
 ]
 
 const chartConfig = {
@@ -113,8 +117,32 @@ const stats = [
  * - Recent sales list with customer details
  */
 export default function Home() {
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  })
+
+  const filteredData = React.useMemo(() => {
+    if (!date?.from || !date?.to) return allDailyData.slice(-30)
+    
+    return allDailyData.filter(item => 
+      isWithinInterval(item.date, { start: date.from!, end: date.to! })
+    )
+  }, [date])
+
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="flex items-center space-x-2">
+          <CalendarDateRangePicker date={date} setDate={setDate} />
+          <Button size="sm">
+            <Download className="mr-2 h-4 w-4" />
+            Download
+          </Button>
+        </div>
+      </div>
+
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -140,17 +168,18 @@ export default function Home() {
         <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Visitor Statistics</CardTitle>
-            <CardDescription>Monthly desktop vs mobile visitors</CardDescription>
+            <CardDescription>Daily desktop vs mobile visitors for selected period</CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
             <ChartContainer config={chartConfig} className="aspect-[16/9] w-full">
-              <BarChart data={barChartData}>
+              <BarChart data={filteredData}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
-                  dataKey="month"
+                  dataKey="formattedDate"
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
+                  interval="preserveStartEnd"
                 />
                 <ChartTooltip
                   cursor={false}
@@ -200,20 +229,21 @@ export default function Home() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         {/* Revenue Line Chart */}
-        <Card className="col-span-3">
+        <Card className="col-span-4">
           <CardHeader>
             <CardTitle>Revenue Growth</CardTitle>
             <CardDescription>Track your earnings over time</CardDescription>
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig} className="aspect-[16/9] w-full">
-              <LineChart data={lineData}>
+              <LineChart data={filteredData}>
                 <CartesianGrid vertical={false} strokeDasharray="3 3" />
                 <XAxis
-                  dataKey="month"
+                  dataKey="formattedDate"
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}
+                  interval="preserveStartEnd"
                 />
                 <ChartTooltip
                   cursor={false}
@@ -232,7 +262,7 @@ export default function Home() {
         </Card>
 
         {/* Device Usage Pie Chart */}
-        <Card className="col-span-4">
+        <Card className="col-span-3">
           <CardHeader>
             <CardTitle>Device Usage</CardTitle>
             <CardDescription>Distribution of traffic by device type</CardDescription>
@@ -241,14 +271,14 @@ export default function Home() {
             <ChartContainer config={chartConfig} className="aspect-[16/9] w-full">
               <PieChart>
                 <Pie
-                  data={pieData}
+                  data={pieDataAll}
                   dataKey="value"
                   nameKey="name"
                   innerRadius={60}
                   outerRadius={80}
                   paddingAngle={5}
                 >
-                  {pieData.map((entry, index) => (
+                  {pieDataAll.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.fill} />
                   ))}
                 </Pie>

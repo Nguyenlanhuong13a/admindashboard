@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { usePathname } from "next/navigation"
+import { useUser, SignOutButton } from "@clerk/nextjs"
 import {
   BadgeCheck,
   Bell,
@@ -13,6 +14,10 @@ import {
   Users,
   ShoppingCart,
   FileText,
+  Kanban,
+  Calendar,
+  FolderOpen,
+  MessageSquare,
 } from "lucide-react"
 
 import {
@@ -69,6 +74,26 @@ const data = {
       icon: FileText,
     },
     {
+      title: "Kanban",
+      url: "/kanban",
+      icon: Kanban,
+    },
+    {
+      title: "Calendar",
+      url: "/calendar",
+      icon: Calendar,
+    },
+    {
+      title: "File Manager",
+      url: "/files",
+      icon: FolderOpen,
+    },
+    {
+      title: "Chat",
+      url: "/chat",
+      icon: MessageSquare,
+    },
+    {
       title: "Settings",
       url: "/settings",
       icon: Settings2,
@@ -78,6 +103,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
+  const { user, isLoaded } = useUser()
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -129,14 +155,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={data.user.avatar} alt={data.user.name} />
-                    <AvatarFallback className="rounded-lg">AD</AvatarFallback>
+                    <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
+                    <AvatarFallback className="rounded-lg">{user?.firstName?.charAt(0) || "U"}</AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="font-semibold truncate">
-                      {data.user.name}
+                      {user?.fullName || "User"}
                     </span>
-                    <span className="text-xs truncate">{data.user.email}</span>
+                    <span className="text-xs truncate">{user?.primaryEmailAddress?.emailAddress}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -150,15 +176,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      <AvatarImage src={data.user.avatar} alt={data.user.name} />
-                      <AvatarFallback className="rounded-lg">AD</AvatarFallback>
+                      <AvatarImage src={user?.imageUrl} alt={user?.fullName || "User"} />
+                      <AvatarFallback className="rounded-lg">{user?.firstName?.charAt(0) || "U"}</AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">
                       <span className="font-semibold truncate">
-                        {data.user.name}
+                        {user?.fullName || "User"}
                       </span>
                       <span className="text-xs truncate">
-                        {data.user.email}
+                        {user?.primaryEmailAddress?.emailAddress}
                       </span>
                     </div>
                   </div>
@@ -178,10 +204,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="/login">
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Log out
-                  </Link>
+                  <SignOutButton>
+                    <div className="flex w-full items-center cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Log out
+                    </div>
+                  </SignOutButton>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
