@@ -5,7 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Plus, MoreVertical, Loader2 } from "lucide-react"
+import { Plus, MoreVertical, Loader2, LayoutPanelLeft, PlusCircle } from "lucide-react"
 import { getKanbanBoard, updateTaskPosition, addTask, deleteTask, seedInitialData } from "@/actions/kanban"
 import {
   DropdownMenu,
@@ -154,6 +154,32 @@ export default function KanbanPage() {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (columns.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center border-2 border-dashed rounded-lg p-12 gap-4">
+        <div className="bg-muted p-4 rounded-full">
+          <LayoutPanelLeft className="h-10 w-10 text-muted-foreground" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold">No Kanban columns available</h3>
+          <p className="text-muted-foreground max-w-sm">
+            Your board is currently empty. Start by seeding initial data or creating your first column to manage tasks.
+          </p>
+        </div>
+        <Button size="lg" className="mt-4" onClick={async () => {
+          setLoading(true)
+          await seedInitialData()
+          const data = await getKanbanBoard()
+          setColumns(data)
+          setLoading(false)
+          toast.success("Initial columns created")
+        }}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Create First Column
+        </Button>
       </div>
     )
   }

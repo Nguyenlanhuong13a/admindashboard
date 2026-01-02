@@ -16,7 +16,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Plus } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Plus, Receipt, FilePlus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -231,6 +231,90 @@ export default function InvoicesPage() {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center border-2 border-dashed rounded-lg p-12 gap-4">
+        <div className="bg-muted p-4 rounded-full">
+          <Receipt className="h-10 w-10 text-muted-foreground" />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-semibold">No invoices yet</h3>
+          <p className="text-muted-foreground max-w-sm">
+            You haven't created any invoices yet. Track your business transactions by adding your first invoice.
+          </p>
+        </div>
+        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+          <DialogTrigger asChild>
+            <Button size="lg" className="mt-4">
+              <FilePlus className="mr-2 h-4 w-4" /> Create Your First Invoice
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <form onSubmit={handleAddInvoice}>
+              <DialogHeader>
+                <DialogTitle>Add New Invoice</DialogTitle>
+                <DialogDescription>
+                  Enter the details of the new invoice to track it in the system.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="customer">Customer Name</Label>
+                  <Input
+                    id="customer"
+                    value={newInvoice.customer}
+                    onChange={(e) => setNewInvoice({ ...newInvoice, customer: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="amount">Amount (e.g. 1999.00)</Label>
+                    <Input
+                      id="amount"
+                      value={newInvoice.amount}
+                      onChange={(e) => setNewInvoice({ ...newInvoice, amount: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="date">Date</Label>
+                    <Input
+                      id="date"
+                      type="date"
+                      value={newInvoice.date}
+                      onChange={(e) => setNewInvoice({ ...newInvoice, date: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={newInvoice.status}
+                    onValueChange={(value) => setNewInvoice({ ...newInvoice, status: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Paid">Paid</SelectItem>
+                      <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Unpaid">Unpaid</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit">Add Invoice</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     )
   }
