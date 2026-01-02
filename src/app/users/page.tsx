@@ -55,7 +55,9 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Loader2 } from "lucide-react"
-import { addUser, getUsers, seedUsers, deleteUser } from "@/actions/dashboard"
+import { getUsers } from "@/actions/users"
+import { addUser, deleteUser } from "@/actions/dashboard"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
 
 type UserData = {
@@ -91,7 +93,6 @@ export default function UsersPage() {
 
   React.useEffect(() => {
     const init = async () => {
-      await seedUsers()
       await refreshData()
       setLoading(false)
     }
@@ -107,12 +108,33 @@ export default function UsersPage() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Name
+            User
             <ArrowUpDown className="ml-2 h-4 w-4" />
           </Button>
         )
       },
-      cell: ({ row }) => <div className="lowercase">{row.getValue("name")}</div>,
+      cell: ({ row }) => {
+        const name = row.getValue("name") as string
+        const email = row.getValue("email") as string
+        const initials = name
+          .split(" ")
+          .map((n) => n[0])
+          .join("")
+          .toUpperCase()
+
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-9 w-9">
+              <AvatarImage src={`https://avatar.vercel.sh/${email}.png`} alt={name} />
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium text-foreground">{name}</span>
+              <span className="text-xs text-muted-foreground">{email}</span>
+            </div>
+          </div>
+        )
+      },
     },
     {
       accessorKey: "email",
