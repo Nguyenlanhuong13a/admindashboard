@@ -66,6 +66,20 @@ export async function addTask(content: string, priority: string, columnId: strin
   }
 }
 
+// Delete a task
+export async function deleteTask(taskId: string) {
+  try {
+    await db.kanbanTask.delete({
+      where: { id: taskId },
+    })
+    revalidatePath("/kanban")
+    return { success: true }
+  } catch (error) {
+    console.error("Failed to delete task:", error)
+    return { success: false, error: "Failed to delete task" }
+  }
+}
+
 // Optional: Seed initial columns if empty
 export async function seedInitialData() {
   const count = await db.kanbanColumn.count()

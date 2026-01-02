@@ -6,7 +6,14 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Plus, MoreVertical, Loader2 } from "lucide-react"
-import { getKanbanBoard, updateTaskPosition, addTask, seedInitialData } from "@/actions/kanban"
+import { getKanbanBoard, updateTaskPosition, addTask, deleteTask, seedInitialData } from "@/actions/kanban"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Trash2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -123,6 +130,21 @@ export default function KanbanPage() {
     }
   }
 
+  const handleDeleteTask = async (taskId: string) => {
+    try {
+      const res = await deleteTask(taskId)
+      if (res.success) {
+        toast.success("Task deleted successfully")
+        const data = await getKanbanBoard()
+        setColumns(data)
+      } else {
+        toast.error(res.error || "Failed to delete task")
+      }
+    } catch {
+      toast.error("An error occurred while deleting the task")
+    }
+  }
+
   const openAddModal = (columnId: string) => {
     setActiveColumnId(columnId)
     setIsAddOpen(true)
@@ -181,9 +203,22 @@ export default function KanbanPage() {
                                 <p className="text-sm font-medium leading-none">
                                   {task.content}
                                 </p>
-                                <Button variant="ghost" size="icon" className="h-6 w-6">
-                                  <MoreVertical className="h-3 w-3" />
-                                </Button>
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                                      <MoreVertical className="h-3 w-3" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem
+                                      className="text-destructive focus:text-destructive cursor-pointer"
+                                      onClick={() => handleDeleteTask(task.id)}
+                                    >
+                                      <Trash2 className="mr-2 h-4 w-4" />
+                                      <span>Delete Task</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                               <div className="flex items-center justify-between">
                                 <Badge
