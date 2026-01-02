@@ -1,0 +1,106 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model KanbanColumn {
+  id        String       @id @default(cuid())
+  title     String
+  order     Int          @default(0)
+  tasks     KanbanTask[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model KanbanTask {
+  id        String       @id @default(cuid())
+  content   String
+  priority  String       @default("low") // low, medium, high
+  order     Int          @default(0)
+  columnId  String
+  column    KanbanColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      String   @default("User") // Admin, User, Editor
+  status    String   @default("Active") // Active, Inactive
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  category  String
+  price     String
+  stock     Int      @default(0)
+  status    String   @default("In Stock") // In Stock, Out of Stock
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Invoice {
+  id        String   @id @default(cuid())
+  customer  String
+  amount    String
+  date      String
+  status    String   @default("Pending") // Paid, Pending, Unpaid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CalendarEvent {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime
+  type      String   @default("reminder") // meeting, deadline, reminder
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  senderId  String
+  text      String
+  time      String
+  isMe      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model FileItem {
+  id        String   @id @default(cuid())
+  name      String
+  type      String   // folder, file
+  extension String?
+  size      String?
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+model Profile {
+  id              String   @id @default(cuid())
+  clerkId         String   @unique
+  username        String?
+  bio             String?
+  marketingEmails Boolean  @default(false)
+  securityEmails  Boolean  @default(true)
+  theme           String   @default("system")
+  language        String   @default("en")
+  dob             DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

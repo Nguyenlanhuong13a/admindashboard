@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Users, DollarSign, ShoppingCart, Activity, Download } from "lucide-react"
+import { getDashboardStats, getInvoices } from "@/actions/dashboard"
+import { Loader2, DollarSign, Users, ShoppingCart, Activity, Download } from "lucide-react"
 import {
   Bar,
   BarChart,
@@ -13,9 +14,8 @@ import {
   Pie,
   PieChart,
   Cell,
-  ResponsiveContainer,
 } from "recharts"
-import { addDays, subDays, isWithinInterval, format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns"
+import { subDays, isWithinInterval, format, eachDayOfInterval } from "date-fns"
 import { DateRange } from "react-day-picker"
 
 import {
@@ -48,8 +48,6 @@ const generateDailyData = (days: number) => {
   }))
 }
 
-const allDailyData = generateDailyData(90) // 90 days of data
-
 const pieDataAll = [
   { name: "Desktop", value: 400, fill: "var(--color-desktop)" },
   { name: "Mobile", value: 300, fill: "var(--color-mobile)" },
@@ -75,33 +73,6 @@ const chartConfig = {
   }
 } satisfies ChartConfig
 
-const stats = [
-  {
-    title: "Total Revenue",
-    value: "$45,231.89",
-    description: "+20.1% from last month",
-    icon: DollarSign,
-  },
-  {
-    title: "Subscriptions",
-    value: "+2350",
-    description: "+180.1% from last month",
-    icon: Users,
-  },
-  {
-    title: "Sales",
-    value: "+12,234",
-    description: "+19% from last month",
-    icon: ShoppingCart,
-  },
-  {
-    title: "Active Now",
-    value: "+573",
-    description: "+201 since last hour",
-    icon: Activity,
-  },
-]
-
 /**
  * Dashboard Page
  * 
@@ -121,14 +92,63 @@ export default function Home() {
     from: subDays(new Date(), 30),
     to: new Date(),
   })
+  const [chartData, setChartData] = React.useState<Array<{
+    date: Date
+    formattedDate: string
+    desktop: number
+    mobile: number
+    revenue: number
+  }>>([])
+  const [statsData, setStatsData] = React.useState<Array<{
+    title: string
+    value: string
+    description: string
+    icon: string
+  }>>([])
+  const [recentSales, setRecentSales] = React.useState<Array<{
+    customer: string
+    amount: string
+    date: string
+  }>>([])
+  const [loading, setLoading] = React.useState(true)
+
+  React.useEffect(() => {
+    const init = async () => {
+      const [stats, invoices] = await Promise.all([
+        getDashboardStats(),
+        getInvoices(),
+      ])
+      setStatsData(stats)
+      setRecentSales(invoices.slice(0, 5))
+      setChartData(generateDailyData(90))
+      setLoading(false)
+    }
+    init()
+  }, [])
 
   const filteredData = React.useMemo(() => {
-    if (!date?.from || !date?.to) return allDailyData.slice(-30)
+    if (chartData.length === 0) return []
+    if (!date?.from || !date?.to) return chartData.slice(-30)
     
-    return allDailyData.filter(item => 
+    return chartData.filter(item => 
       isWithinInterval(item.date, { start: date.from!, end: date.to! })
     )
-  }, [date])
+  }, [date, chartData])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  const iconMap: Record<string, React.ElementType> = {
+    DollarSign,
+    Users,
+    ShoppingCart,
+    Activity,
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4">
@@ -145,22 +165,25 @@ export default function Home() {
 
       {/* Overview Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {statsData.map((stat) => {
+          const Icon = iconMap[stat.icon] || Activity
+          return (
+            <Card key={stat.title}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {stat.title}
+                </CardTitle>
+                <Icon className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  {stat.description}
+                </p>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -197,29 +220,23 @@ export default function Home() {
           <CardHeader>
             <CardTitle>Recent Sales</CardTitle>
             <CardDescription>
-              You made 265 sales this month.
+              You made {recentSales.length} sales recently.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-8">
-              {[
-                { name: "Olivia Martin", email: "olivia.martin@email.com", amount: "+$1,999.00", initials: "OM" },
-                { name: "Jackson Lee", email: "jackson.lee@email.com", amount: "+$39.00", initials: "JL" },
-                { name: "Isabella Nguyen", email: "isabella.nguyen@email.com", amount: "+$299.00", initials: "IN" },
-                { name: "William Kim", email: "will@email.com", amount: "+$99.00", initials: "WK" },
-                { name: "Sofia Davis", email: "sofia.davis@email.com", amount: "+$39.00", initials: "SD" },
-              ].map((user, i) => (
+              {recentSales.map((sale, i) => (
                 <div key={i} className="flex items-center">
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback>{user.initials}</AvatarFallback>
+                    <AvatarFallback>{sale.customer.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
+                    <p className="text-sm font-medium leading-none">{sale.customer}</p>
                     <p className="text-sm text-muted-foreground">
-                      {user.email}
+                      {sale.date}
                     </p>
                   </div>
-                  <div className="ml-auto font-medium">{user.amount}</div>
+                  <div className="ml-auto font-medium">{sale.amount}</div>
                 </div>
               ))}
             </div>

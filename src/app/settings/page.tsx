@@ -44,6 +44,10 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { toast } from "sonner"
+import { useUser } from "@clerk/nextjs"
+import { getProfile, updateProfile } from "@/actions/dashboard"
+import * as React from "react"
+import { Loader2 } from "lucide-react"
 
 const languages = [
   { label: "English", value: "en" },
@@ -101,7 +105,10 @@ const defaultValues: Partial<ProfileFormValues> = {
  * Uses react-hook-form with zod validation.
  */
 export default function SettingsPage() {
+  const { user, isLoaded: isUserLoaded } = useUser()
   const { setTheme, theme: currentTheme } = useTheme()
+  const [loading, setLoading] = React.useState(true)
+
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -111,12 +118,62 @@ export default function SettingsPage() {
     mode: "onChange",
   })
 
-  function onSubmit(data: ProfileFormValues) {
-    setTheme(data.theme)
-    console.log(data)
-    toast.success("Settings saved successfully!", {
-      description: "Your profile and preferences have been updated.",
-    })
+  React.useEffect(() => {
+    if (isUserLoaded && user) {
+      const init = async () => {
+        try {
+          const profile = await getProfile(user.id)
+          form.reset({
+            username: profile.username || "",
+            email: user.primaryEmailAddress?.emailAddress || "",
+            bio: profile.bio || "",
+            marketing_emails: profile.marketingEmails,
+            security_emails: profile.securityEmails,
+            theme: profile.theme,
+            language: profile.language,
+            dob: profile.dob ? new Date(profile.dob) : new Date("1995-01-01"),
+          })
+          setTheme(profile.theme)
+        } catch (error) {
+          console.error("Failed to load profile", error)
+          toast.error("Failed to load profile settings")
+        } finally {
+          setLoading(false)
+        }
+      }
+      init()
+    }
+  }, [isUserLoaded, user, form, setTheme])
+
+  async function onSubmit(data: ProfileFormValues) {
+    if (!user) return
+
+    try {
+      await updateProfile(user.id, {
+        username: data.username,
+        bio: data.bio,
+        marketingEmails: data.marketing_emails,
+        securityEmails: data.security_emails,
+        theme: data.theme,
+        language: data.language,
+        dob: data.dob,
+      })
+      setTheme(data.theme)
+      toast.success("Settings saved successfully!", {
+        description: "Your profile and preferences have been updated.",
+      })
+    } catch (error) {
+      console.error("Failed to update profile", error)
+      toast.error("Failed to save settings")
+    }
+  }
+
+  if (!isUserLoaded || loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
   }
 
   return (

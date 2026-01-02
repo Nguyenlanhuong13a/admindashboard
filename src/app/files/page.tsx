@@ -25,31 +25,49 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { getFileItems, seedFileItems, addFileItem, deleteFileItem } from "@/actions/dashboard"
+import { toast } from "sonner"
+import { Loader2 } from "lucide-react"
 
 type FileItem = {
   id: string
   name: string
-  type: 'folder' | 'file'
-  extension?: string
-  size?: string
-  updatedAt: string
+  type: string // folder, file
+  extension?: string | null
+  size?: string | null
+  updatedAt: Date | string
 }
-
-const initialFiles: FileItem[] = [
-  { id: "1", name: "Documents", type: "folder", updatedAt: "2023-12-01" },
-  { id: "2", name: "Images", type: "folder", updatedAt: "2023-12-05" },
-  { id: "3", name: "Project-v1.pdf", type: "file", extension: "pdf", size: "2.4 MB", updatedAt: "2023-12-10" },
-  { id: "4", name: "Presentation.pptx", type: "file", extension: "pptx", size: "5.1 MB", updatedAt: "2023-12-12" },
-  { id: "5", name: "Hero-bg.jpg", type: "file", extension: "jpg", size: "1.2 MB", updatedAt: "2023-12-14" },
-  { id: "6", name: "Invoices-2023.zip", type: "file", extension: "zip", size: "15.8 MB", updatedAt: "2023-12-15" },
-]
 
 export default function FileManagerPage() {
   const [view, setView] = React.useState<'grid' | 'list'>('grid')
   const [searchQuery, setSearchQuery] = React.useState("")
+  const [files, setFiles] = React.useState<FileItem[]>([])
+  const [loading, setLoading] = React.useState(true)
+  const [isFolderOpen, setIsFolderOpen] = React.useState(false)
+  const [isUploadOpen, setIsUploadOpen] = React.useState(false)
+  const [newFolderName, setNewFolderName] = React.useState("")
+  const [newFileName, setNewFileName] = React.useState("")
 
-  const filteredFiles = initialFiles.filter(file => 
+  React.useEffect(() => {
+    const init = async () => {
+      await seedFileItems()
+      const data = await getFileItems()
+      setFiles(data as unknown as FileItem[])
+      setLoading(false)
+    }
+    init()
+  }, [])
+
+  const filteredFiles = files.filter(file => 
     file.name.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -66,17 +84,130 @@ export default function FileManagerPage() {
     }
   }
 
+  const handleNewFolder = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newFolderName) return
+
+    try {
+      await addFileItem({ name: newFolderName, type: "folder" })
+      toast.success("Folder created successfully")
+      setIsFolderOpen(false)
+      setNewFolderName("")
+      const data = await getFileItems()
+      setFiles(data as unknown as FileItem[])
+    } catch {
+      toast.error("Failed to create folder")
+    }
+  }
+
+  const handleDeleteFile = async (id: string) => {
+    if (confirm("Are you sure you want to delete this item?")) {
+      try {
+        await deleteFileItem(id)
+        toast.success("Item deleted successfully")
+        const data = await getFileItems()
+        setFiles(data as unknown as FileItem[])
+      } catch {
+        toast.error("Failed to delete item")
+      }
+    }
+  }
+
+  const handleUpload = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newFileName) return
+
+    try {
+      await addFileItem({ 
+        name: newFileName, 
+        type: "file", 
+        extension: newFileName.split(".").pop() || "txt",
+        size: "0 KB"
+      })
+      toast.success("File uploaded successfully")
+      setIsUploadOpen(false)
+      setNewFileName("")
+      const data = await getFileItems()
+      setFiles(data as unknown as FileItem[])
+    } catch {
+      toast.error("Failed to upload file")
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-4 p-4 h-full">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">File Manager</h2>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Upload className="mr-2 h-4 w-4" /> Upload
-          </Button>
-          <Button>
-            <Folder className="mr-2 h-4 w-4" /> New Folder
-          </Button>
+          <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
+            <Button variant="outline" onClick={() => setIsUploadOpen(true)}>
+              <Upload className="mr-2 h-4 w-4" /> Upload
+            </Button>
+            <DialogContent>
+              <form onSubmit={handleUpload}>
+                <DialogHeader>
+                  <DialogTitle>Upload File</DialogTitle>
+                  <DialogDescription>
+                    Enter the name of the file you want to upload.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="fileName">File Name</Label>
+                    <Input
+                      id="fileName"
+                      placeholder="e.g. report.pdf"
+                      value={newFileName}
+                      onChange={(e) => setNewFileName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Upload</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isFolderOpen} onOpenChange={setIsFolderOpen}>
+            <Button onClick={() => setIsFolderOpen(true)}>
+              <Folder className="mr-2 h-4 w-4" /> New Folder
+            </Button>
+            <DialogContent>
+              <form onSubmit={handleNewFolder}>
+                <DialogHeader>
+                  <DialogTitle>New Folder</DialogTitle>
+                  <DialogDescription>
+                    Enter a name for the new folder.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="folderName">Folder Name</Label>
+                    <Input
+                      id="folderName"
+                      placeholder="e.g. Documents"
+                      value={newFolderName}
+                      onChange={(e) => setNewFolderName(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button type="submit">Create Folder</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -126,7 +257,7 @@ export default function FileManagerPage() {
                       <DropdownMenuItem>
                         <Download className="mr-2 h-4 w-4" /> Download
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteFile(file.id)}>
                         <Trash2 className="mr-2 h-4 w-4" /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -170,7 +301,7 @@ export default function FileManagerPage() {
                       </div>
                     </td>
                     <td className="p-4 text-muted-foreground">{file.size || '--'}</td>
-                    <td className="p-4 text-muted-foreground">{file.updatedAt}</td>
+                    <td className="p-4 text-muted-foreground">{new Date(file.updatedAt).toLocaleDateString()}</td>
                     <td className="p-4 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -182,7 +313,7 @@ export default function FileManagerPage() {
                           <DropdownMenuItem>
                             <Download className="mr-2 h-4 w-4" /> Download
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteFile(file.id)}>
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>

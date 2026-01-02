@@ -103,7 +103,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname()
-  const { user, isLoaded } = useUser()
+  const { user } = useUser()
 
   return (
     <Sidebar collapsible="icon" {...props}>
