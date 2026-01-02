@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
-import { getChatMessages, seedChatMessages, sendChatMessage, getUsers } from "@/actions/dashboard"
+import { getChatMessages, sendChatMessage, getUsers } from "@/actions/dashboard"
 import { Loader2 } from "lucide-react"
 
 type ChatUser = {
@@ -39,7 +39,6 @@ export default function ChatPage() {
   React.useEffect(() => {
     const init = async () => {
       try {
-        await seedChatMessages()
         const [usersData, messagesData] = await Promise.all([
           getUsers(),
           getChatMessages()

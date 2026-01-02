@@ -56,7 +56,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
-import { getProducts, seedProducts, deleteProduct, addProduct } from "@/actions/dashboard"
+import { getProducts, deleteProduct, addProduct } from "@/actions/dashboard"
 import { toast } from "sonner"
 
 type ProductData = {
@@ -91,7 +91,6 @@ export default function ProductsPage() {
 
   React.useEffect(() => {
     const init = async () => {
-      await seedProducts()
       await refreshData()
       setLoading(false)
     }

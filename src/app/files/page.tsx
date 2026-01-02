@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
-import { getFileItems, seedFileItems, addFileItem, deleteFileItem } from "@/actions/dashboard"
+import { getFileItems, addFileItem, deleteFileItem } from "@/actions/dashboard"
 import { toast } from "sonner"
 import { Loader2 } from "lucide-react"
 
@@ -59,7 +59,6 @@ export default function FileManagerPage() {
 
   React.useEffect(() => {
     const init = async () => {
-      await seedFileItems()
       const data = await getFileItems()
       setFiles(data as unknown as FileItem[])
       setLoading(false)

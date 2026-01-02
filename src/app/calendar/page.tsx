@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, addMonths, subMonths } from "date-fns"
-import { getCalendarEvents, seedCalendarEvents, addCalendarEvent, deleteCalendarEvent } from "@/actions/dashboard"
+import { getCalendarEvents, addCalendarEvent, deleteCalendarEvent } from "@/actions/dashboard"
 import { toast } from "sonner"
 import { Plus, ChevronLeft, ChevronRight, MoreVertical, Loader2 } from "lucide-react"
 
@@ -46,7 +46,6 @@ export default function CalendarPage() {
 
   React.useEffect(() => {
     const init = async () => {
-      await seedCalendarEvents()
       const data = await getCalendarEvents()
       setEvents(data)
       setLoading(false)

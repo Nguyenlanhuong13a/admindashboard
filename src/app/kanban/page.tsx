@@ -55,7 +55,6 @@ export default function KanbanPage() {
   React.useEffect(() => {
     const init = async () => {
       try {
-        await seedInitialData()
         const data = await getKanbanBoard()
         setColumns(data)
       } catch (error) {

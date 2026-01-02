@@ -56,7 +56,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Loader2 } from "lucide-react"
-import { getInvoices, seedInvoices, deleteInvoice, addInvoice } from "@/actions/dashboard"
+import { getInvoices, deleteInvoice, addInvoice } from "@/actions/dashboard"
 import { toast } from "sonner"
 
 type InvoiceData = {
@@ -89,7 +89,6 @@ export default function InvoicesPage() {
 
   React.useEffect(() => {
     const init = async () => {
-      await seedInvoices()
       await refreshData()
       setLoading(false)
     }
