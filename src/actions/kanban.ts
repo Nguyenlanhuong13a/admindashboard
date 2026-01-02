@@ -5,15 +5,20 @@ import { revalidatePath } from "next/cache"
 
 // Fetch all Kanban data
 export async function getKanbanBoard() {
-  const columns = await db.kanbanColumn.findMany({
-    include: {
-      tasks: {
-        orderBy: { order: "asc" },
+  try {
+    const columns = await db.kanbanColumn.findMany({
+      include: {
+        tasks: {
+          orderBy: { order: "asc" },
+        },
       },
-    },
-    orderBy: { order: "asc" },
-  })
-  return columns
+      orderBy: { order: "asc" },
+    })
+    return columns
+  } catch (error) {
+    console.error("SERVER ACTION ERROR (getKanbanBoard):", error)
+    throw error
+  }
 }
 
 // Update task position after drag & drop

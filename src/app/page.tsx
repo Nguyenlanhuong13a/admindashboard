@@ -114,14 +114,21 @@ export default function Home() {
 
   React.useEffect(() => {
     const init = async () => {
-      const [stats, invoices] = await Promise.all([
-        getDashboardStats(),
-        getInvoices(),
-      ])
-      setStatsData(stats)
-      setRecentSales(invoices.slice(0, 5))
-      setChartData(generateDailyData(90))
-      setLoading(false)
+      try {
+        const [stats, invoices] = await Promise.all([
+          getDashboardStats(),
+          getInvoices(),
+        ])
+        setStatsData(stats)
+        setRecentSales(invoices.slice(0, 5))
+        setChartData(generateDailyData(90))
+      } catch (error) {
+        console.error("Dashboard data fetch error:", error)
+        setStatsData([])
+        setRecentSales([])
+      } finally {
+        setLoading(false)
+      }
     }
     init()
   }, [])

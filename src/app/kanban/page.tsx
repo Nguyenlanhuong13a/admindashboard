@@ -47,10 +47,16 @@ export default function KanbanPage() {
   // Fetch data on mount
   React.useEffect(() => {
     const init = async () => {
-      await seedInitialData()
-      const data = await getKanbanBoard()
-      setColumns(data)
-      setLoading(false)
+      try {
+        await seedInitialData()
+        const data = await getKanbanBoard()
+        setColumns(data)
+      } catch (error) {
+        console.error("Failed to fetch Kanban board:", error)
+        toast.error("Failed to load board. Check database connection.")
+      } finally {
+        setLoading(false)
+      }
     }
     init()
   }, [])

@@ -257,43 +257,48 @@ export async function updateProfile(clerkId: string, data: {
 
 // --- Dashboard Stats ---
 export async function getDashboardStats() {
-  const [userCount, productCount, invoiceCount] = await Promise.all([
-    db.user.count(),
-    db.product.count(),
-    db.invoice.count(),
-  ])
+  try {
+    const [userCount, productCount, invoiceCount] = await Promise.all([
+      db.user.count(),
+      db.product.count(),
+      db.invoice.count(),
+    ])
 
-  // Simple aggregate for total revenue from invoices
-  const allInvoices = await db.invoice.findMany()
-  const totalRevenue = allInvoices.reduce((acc: number, inv: { amount: string }) => {
-    const amount = parseFloat(inv.amount.replace(/[^0-9.-]+/g, ""))
-    return acc + (isNaN(amount) ? 0 : amount)
-  }, 0)
+    // Simple aggregate for total revenue from invoices
+    const allInvoices = await db.invoice.findMany()
+    const totalRevenue = allInvoices.reduce((acc: number, inv: { amount: string }) => {
+      const amount = parseFloat(inv.amount.replace(/[^0-9.-]+/g, ""))
+      return acc + (isNaN(amount) ? 0 : amount)
+    }, 0)
 
-  return [
-    {
-      title: "Total Revenue",
-      value: `$${totalRevenue.toLocaleString()}`,
-      description: "+20.1% from last month",
-      icon: "DollarSign",
-    },
-    {
-      title: "Subscriptions",
-      value: `+${userCount}`,
-      description: "+180.1% from last month",
-      icon: "Users",
-    },
-    {
-      title: "Products",
-      value: `+${productCount}`,
-      description: "+19% from last month",
-      icon: "ShoppingCart",
-    },
-    {
-      title: "Active Now",
-      value: `+${invoiceCount}`,
-      description: "Total invoices",
-      icon: "Activity",
-    },
-  ]
+    return [
+      {
+        title: "Total Revenue",
+        value: `$${totalRevenue.toLocaleString()}`,
+        description: "+20.1% from last month",
+        icon: "DollarSign",
+      },
+      {
+        title: "Subscriptions",
+        value: `+${userCount}`,
+        description: "+180.1% from last month",
+        icon: "Users",
+      },
+      {
+        title: "Products",
+        value: `+${productCount}`,
+        description: "+19% from last month",
+        icon: "ShoppingCart",
+      },
+      {
+        title: "Active Now",
+        value: `+${invoiceCount}`,
+        description: "Total invoices",
+        icon: "Activity",
+      },
+    ]
+  } catch (error) {
+    console.error("SERVER ACTION ERROR (getDashboardStats):", error)
+    throw error
+  }
 }
